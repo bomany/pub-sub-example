@@ -1,0 +1,38 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>Flask-SocketIO Test</title>
+    <script src="//code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ="
+            crossorigin="anonymous"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"
+            integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
+</head>
+<body>
+<h1>Pub Sub Simulator</h1>
+
+<h2>Send Message</h2>
+<form id="send" action="#" method="POST">
+    <input type="text" name="message" required="required" id="send-message" placeholder="Message to Send">
+    <input type="submit" value="Send">
+</form>
+
+
+<h2>Message Received:</h2>
+<div id="log"></div>
+
+<script>
+    $(document).ready(function () {
+        var socket = io.connect('http://' + document.domain + ':' + location.port + '/');
+        socket.on('new message', function (msg) {
+            $('#log').append('<p>Received: ' + msg.data + '</p>');
+        });
+
+        $('form#send').submit(function (event) {
+            socket.emit('send_message', {data: $("#send-message").val()});
+            return false;
+        });
+
+    })
+</script>
+</body>
+</html>

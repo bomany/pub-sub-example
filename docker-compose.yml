@@ -1,0 +1,51 @@
+version: "3"
+
+services:
+  web:
+    image: flask_pubsub
+    build:
+      context: .
+      dockerfile: python.dockerfile
+    command: bash -c "./wait-for-it.sh rabbitmq:5672 -- flask run -h 0.0.0.0"
+    volumes:
+      - .:/project
+    ports:
+      - ${WEB_PORT:-5000}:5000
+    depends_on:
+      - rabbitmq
+
+  consumer_a:
+    image: flask_pubsub
+    command: bash -c "./wait-for-it.sh rabbitmq:5672 -- python3 start_consumer.py solo_queue_a"
+    volumes:
+      - .:/project
+    depends_on:
+      - web
+      - rabbitmq
+
+  consumer_b:
+    image: flask_pubsub
+    command: bash -c "./wait-for-it.sh rabbitmq:5672 -- python3 start_consumer.py solo_queue_b"
+    volumes:
+      - .:/project
+    depends_on:
+      - web
+      - rabbitmq
+
+  rabbitmq:
+    image: rabbitmq:management
+    container_name: rabbitmq
+    volumes:
+      - rabbitmq:/etc/rabbitmq/
+      - rabbitmq:/var/lib/rabbitmq/
+      - rabbitmq:/var/log/rabbitmq/
+    environment:
+      RABBITMQ_ERLANG_COOKIE: cookies
+      RABBITMQ_DEFAULT_USER: rabbitmq
+      RABBITMQ_DEFAULT_PASS: rabbitmq
+    ports:
+      - 5672:5672
+      - 15672:15672
+
+volumes:
+  rabbitmq:
